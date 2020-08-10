@@ -1,7 +1,9 @@
 from typing import Optional
-
 from fastapi import FastAPI
 from pydantic import BaseModel
+from model import Session, SesionConsejo, Representante, Asistencias, cargar_db, as_dict
+from sqlalchemy.orm import load_only
+from pprint import pprint
 
 app = FastAPI()
 
@@ -17,11 +19,35 @@ def saludo():
     return {"saludo": "Hola, Mundo"}
 
 
-@app.get("/consejo/{item_id}")
-def read_item(item_id: int, q: Optional[str] = None):
-    return {"item_id": item_id, "q": q}
+def limpiar_asistencias(asistencias):
+    asistencias = asistencias
+    asistencias_l = []
+
+    for asistencia in asistencias:
+        asistencias_l.append(
+            {"fecha": asistencia.fecha_sesion, "asistio": asistencia.asistio}
+        )
+
+    return asistencias_l
 
 
-@app.put("/items/{item_id}")
-def update_item(item_id: int, item: Item):
-    return {"item_name": item.name, "item_id": item_id}
+@app.get("/consejo/generacional/")
+def read_item():
+    session = Session()
+    representantes = [
+        as_dict(representante) for representante in session.query(Representante).all()
+    ]
+    for indice, representante in enumerate(representantes):
+        asistencias = limpiar_asistencias(
+            session.query(Asistencias)
+            .filter(Asistencias.nombre_representante == representante["nombre"])
+            .all()
+        )
+        representantes[indice]["asistencias"] = asistencias
+
+    session.close()
+
+    return representantes
+
+
+cargar_db()
