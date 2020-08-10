@@ -1,9 +1,8 @@
 from typing import Optional
 from fastapi import FastAPI
 from pydantic import BaseModel
-from model import Session, SesionConsejo, Representante, Asistencias, cargar_db, as_dict
-from sqlalchemy.orm import load_only
-from pprint import pprint
+from model import Asistencias, Representante, Session
+from init_db import cargar_db, as_dict
 
 app = FastAPI()
 
@@ -48,6 +47,5 @@ def read_item():
     session.close()
 
     return representantes
-
 
 cargar_db()
