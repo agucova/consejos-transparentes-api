@@ -54,9 +54,6 @@ class SesionConsejo(Base):
 
         return self
 
-    @hybrid_property
-    def fecha_bonita(self):
-        return self.fecha.strftime("%d/%m/%Y")
 
 
 class Representante(Base):

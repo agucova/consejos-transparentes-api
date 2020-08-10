@@ -5,12 +5,7 @@ from model import Asistencias, Representante, Session
 from init_db import cargar_db, as_dict
 
 app = FastAPI()
-
-
-class Item(BaseModel):
-    name: str
-    price: float
-    is_offer: Optional[bool] = None
+cargar_db()
 
 
 @app.get("/")
@@ -24,7 +19,7 @@ def limpiar_asistencias(asistencias):
 
     for asistencia in asistencias:
         asistencias_l.append(
-            {"fecha": asistencia.fecha_sesion, "asistio": asistencia.asistio}
+            {"fecha": asistencia.fecha_sesion.strftime("%d/%m/%Y"), "asistio": asistencia.asistio}
         )
 
     return asistencias_l
@@ -47,5 +42,3 @@ def read_item():
     session.close()
 
     return representantes
-
-cargar_db()
