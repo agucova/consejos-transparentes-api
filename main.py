@@ -1,5 +1,5 @@
 from typing import Optional
-from fastapi import FastAPI
+from fastapi import FastAPI, status
 from pydantic import BaseModel
 from model import Asistencias, Representante, Session
 from tasks import actualizar_db, as_dict
@@ -10,19 +10,9 @@ import uvicorn
 app = FastAPI()
 
 
-origins = [
-    "https://ct.agucova.me"
-    "https://agucova.github.io",
-    "http://localhost",
-    "http://127.0.0.1",
-    "http://127.0.0.1:5500",
-    "http://localhost:8080",
-]
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
+    allow_origin_regex="(https://.*\.agucova\.me)|(http://127.0.0.1.*)|(https://.*\.github\.io)|(https://.*\.cai\.cl)",
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -53,8 +43,9 @@ def limpiar_asistencias(asistencias):
     return asistencias_l
 
 
-@app.get("/consejo/generacional/")
-def read_item():
+
+@app.get("/rep/generacional/")
+def rep_generacional():
     session = Session()
     representantes = [
         as_dict(representante) for representante in session.query(Representante).all()
@@ -70,3 +61,7 @@ def read_item():
     session.close()
 
     return representantes
+
+@app.get("/rep/generacional/", status_code=418)
+def rep_academico():
+    return "I'm a teapot."
