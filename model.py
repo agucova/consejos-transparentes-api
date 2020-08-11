@@ -48,8 +48,8 @@ class SesionConsejo(Base):
         for representante, asistio in asistencia:
             assert isinstance(asistio, str)
             assert isinstance(representante, Representante)
-            self.asistencias.append(
-                Asistencias(sesion=self, representante=representante, asistio=asistio)
+            self.representantes.append(
+                Asistencias(fecha_sesion=self.fecha, nombre_representante=representante.nombre, asistio=asistio)
             )
 
         return self
