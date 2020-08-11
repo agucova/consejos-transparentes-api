@@ -9,10 +9,6 @@ import uvicorn
 
 app = FastAPI()
 
-# Used for debugging
-if __name__ == "__main__":
-    print("Starting app in debugging mode.")
-    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True, use_colors=True)
 
 origins = [
     "https://ct.agucova.me"
@@ -30,6 +26,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Used for debugging
+if __name__ == "__main__":
+    print("Starting app in debugging mode.")
+    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True, use_colors=True)
 
 
 @app.get("/")
@@ -61,7 +62,7 @@ def read_item():
     for indice, representante in enumerate(representantes):
         asistencias = limpiar_asistencias(
             session.query(Asistencias)
-            .filter(Asistencias.nombre_representante == representante["nombre"])
+            .filter(Asistencias.id == representante["id"])
             .all()
         )
         representantes[indice]["asistencias"] = asistencias

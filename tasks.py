@@ -147,10 +147,10 @@ def actualizar_db():
             sesion.add_representantes([(representante, asistio)])
 
     for representante in representantes.values():
-        session.merge(representante)
+        session.merge(representante, load=True)
 
     for sesion in sesiones.values():
-        session.merge(sesion)
+        session.merge(sesion, load=True)
 
     session.commit()
 

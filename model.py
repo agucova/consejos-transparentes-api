@@ -28,16 +28,20 @@ class Asistencias(Base):
     id = Column("id", Integer, primary_key=True, unique=True)
     asistio = Column("asistió", CHAR(1))
 
-    nombre_representante = Column(CHAR(200), ForeignKey("representantes.nombre"))
+    id_sesion = Column(Integer, ForeignKey("sesiones_consejos.id"))
     fecha_sesion = Column(Date, ForeignKey("sesiones_consejos.fecha"))
+
+    id_representante = Column(Integer, ForeignKey("representantes.id"))
+    nombre_representante = Column(CHAR(200), ForeignKey("representantes.nombre"))
 
 
 class SesionConsejo(Base):
     __tablename__ = "sesiones_consejos"
+    id = Column(Integer, primary_key=True, nullable=False, unique=True)
     nombre = Column(CHAR(50), unique=True, nullable=True)
-    fecha = Column(Date, unique=True, primary_key=True)
+    fecha = Column(Date, unique=True)
     representantes = relationship(
-        "Representante", secondary="asistencias", viewonly=True
+        "Representante", secondary="asistencias", viewonly=True, primaryjoin=id==Asistencias.id_sesion, remote_side=Asistencias.id_sesion, foreign_keys=id
     )
 
     def __str__(self):
@@ -51,8 +55,8 @@ class SesionConsejo(Base):
             assert isinstance(representante, Representante)
             self.representantes.append(
                 Asistencias(
-                    fecha_sesion=self.fecha,
-                    nombre_representante=representante.nombre,
+                    id_sesion=self.id,
+                    id_representante=representante.id,
                     asistio=asistio,
                 )
             )
@@ -62,11 +66,12 @@ class SesionConsejo(Base):
 
 class Representante(Base):
     __tablename__ = "representantes"
-    nombre = Column(CHAR(200), primary_key=True, unique=True, nullable=False)
+    id = Column(Integer, primary_key=True, nullable=False, unique=True)
+    nombre = Column(CHAR(200), unique=True, nullable=False)
     tipo = Column(CHAR(3), nullable=True)
     representa = Column(CHAR(200), nullable=True)
     sesiones = relationship(
-        "SesionConsejo", secondary="asistencias", viewonly=True, lazy="immediate"
+        "SesionConsejo", secondary="asistencias", viewonly=True, lazy="immediate", primaryjoin=id==Asistencias.id_representante, remote_side=Asistencias.id_representante, foreign_keys=id
     )
     # entradas = association_proxy('sesiones', 'entrada')
 
