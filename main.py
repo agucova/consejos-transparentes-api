@@ -70,6 +70,6 @@ def rep_generacional():
 
     return representantes
 
-@app.get("/rep/generacional/")
-def rep_academico(status_code=418):
+@app.get("/rep/generacional/", status_code=418)
+def rep_academico():
     return "I'm a teapot."
