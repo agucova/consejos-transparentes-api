@@ -8,9 +8,8 @@ Type=notify
 User=agucova
 Group=agucova
 RuntimeDirectory=gunicorn
-Environment="GOOGLE_APPLICATION_CREDENTIALS='credentials.json'"
 WorkingDirectory=/home/agucova/repos/consejos-transparentes-api/
-ExecStart=/home/agucova/.poetry/bin/poetry run gunicorn -k uvicorn.workers.UvicornWorker main:app
+ExecStart=/home/agucova/.poetry/bin/poetry run gunicorn -k uvicorn.workers.UvicornWorker --env GOOGLE_APPLICATION_CREDENTIALS="credentials.json" main:app
 ExecReload=/bin/kill -s HUP $MAINPID
 KillMode=mixed
 TimeoutStopSec=5
