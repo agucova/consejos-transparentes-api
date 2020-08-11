@@ -14,18 +14,9 @@ if __name__ == "__main__":
     print("Starting app in debugging mode.")
     uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True, use_colors=True)
 
-origins = [
-    "https://ct.agucova.me"
-    "https://agucova.github.io",
-    "http://localhost",
-    "http://127.0.0.1",
-    "http://127.0.0.1:5500",
-    "http://localhost:8080",
-]
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origin_regex="(https://.*\.agucova\.me)|(http://127.0.0.1.*)|(https://.*\.github\.io)|(https://.*\.cai\.cl)",
     allow_methods=["*"],
     allow_headers=["*"],
 )
