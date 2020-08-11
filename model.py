@@ -35,7 +35,7 @@ class Asistencias(Base):
 class SesionConsejo(Base):
     __tablename__ = "sesiones_consejos"
     nombre = Column(CHAR(50), unique=True, nullable=True)
-    fecha = Column(Date, nullable=False, unique=True, primary_key=True)
+    fecha = Column(Date, unique=True, primary_key=True)
     representantes = relationship(
         "Representante", secondary="asistencias", viewonly=True
     )

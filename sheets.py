@@ -9,71 +9,7 @@ import requests as r
 from pprint import pprint
 from googleapiclient import discovery
 import pandas as pd
-
-ejemplo_ord = [
-    ["Representación", "Nombre", "7/5/20", "5/6/20", "1/7/20"],
-    ["2020", "Agustín Covarrubias", "P", "P", "P"],
-    ["2020", "Katherine Catoni", "P", "P", "P"],
-    ["2020", "Rafael Rencoret", "P", "P", "P"],
-    ["2019", "Tania Hinostroza", "P", "P", "P"],
-    ["2019", "Florencia Sciaraffia", "P", "P", "P"],
-    ["2019", "Martín Illanes", "P", "P", "P"],
-    ["2018", "Joaquín Castaños", "P", "P", "J"],
-    ["2018", "Elizabeth Hermosilla", "P", "P", "J"],
-    ["2018", "Pedro Becker", "P", "P", "P"],
-    ["2017", "Camila López", "P", "P", "P"],
-    ["2017", "Francisco Úrzua", "P", "P", "P"],
-    ["2017", "Bartolomé Peirano", "P", "P", "P"],
-    ["2016", "Manuel Jara", "P", "P", "P"],
-    ["2016", "Ivania Arias", "P", "P", "P"],
-    ["2016", "María Belén Echenique", "P", "P", "P"],
-    ["2015 y ant", "Denise Cariaga", "P", "P", "P"],
-    ["2015 y ant", "Graciela Hernández", "P", "P", "P"],
-    ["2015 y ant", "Caterin Pinto", "P", "P", "P"],
-    ["CAI", "Isa Oyarzo", "P", "P", "P"],
-    ["CAI", "Thomas Struszer", "P", "P", "P"],
-    ["CAI", "Agustín Cox", "P", "P", "P"],
-    ["CAI", "Claudio Escobar", "P", "P", "P"],
-    ["CAI", "Javiera Dawabe", "P", "P", "P"],
-    ["Consejeros Territoriales", "José Pereira", "P", "P", "P"],
-    ["Consejeros Territoriales", "Trinidad Larraín", "P", "P", "P"],
-    ["Consejeros Territoriales", "María Ignacia Henriquez", "P", "P", "P"],
-    ["Consejeros Territoriales", "Tomás Álvarez", "A", "A", "A"],
-    ["Consejeros Territoriales", "Magdalena Merino", "P", "P", "P"],
-]
-
-ejemplo_eord = [
-    ["Representación", "Nombres", "4/7/20", "06/8/20"],
-    ["2020", "Agustín Covarrubias", "P", "P"],
-    ["2020", "Katherine Catoni", "P", "P"],
-    ["2020", "Rafael Rencoret", "P", "P"],
-    ["2019", "Tania Hinostroza", "P", "P"],
-    ["2019", "Florencia Sciaraffia", "P", "P"],
-    ["2019", "Martín Illanes", "P", "P"],
-    ["2018", "Joaquín Castaños", "P", "P"],
-    ["2018", "Elizabeth Hermosilla", "P", "P"],
-    ["2018", "Pedro Becker", "P", "P"],
-    ["2017", "Camila López", "P", "P"],
-    ["2017", "Francisco Úrzua", "P", "O"],
-    ["2017", "Bartolomé Peirano", "P", "P"],
-    ["2016", "Manuel Jara", "P", "P"],
-    ["2016", "Ivania Arias", "P", "P"],
-    ["2016", "María Belén Echenique", "P", "P"],
-    ["2015 y ant", "Denise Cariaga", "P", "P"],
-    ["2015 y ant", "Graciela Hernández", "P", "P"],
-    ["2015 y ant", "Caterin Pinto", "P", "O"],
-    ["CAI", "Isa Oyarzo", "P", "P"],
-    ["CAI", "Thomas Struszer", "P", "P"],
-    ["CAI", "Agustín Cox", "P", "P"],
-    ["CAI", "Claudio Escobar", "P", "P"],
-    ["CAI", "Javiera Dawabe", "P", "P"],
-    ["Consejeros Territoriales", "José Pereira", "A", "P"],
-    ["Consejeros Territoriales", "Trinidad Larraín", "P", "A"],
-    ["Consejeros Territoriales", "María Ignacia Henriquez", "J", "P"],
-    ["Consejeros Territoriales", "Tomás Álvarez", "A", "A"],
-    ["Consejeros Territoriales", "Magdalena Merino", "P", "P"],
-]
-
+from ejemplos import academico_ordinario, academico_extraordinario
 
 def setup_service():
     return discovery.build("sheets", "v4")
@@ -266,22 +202,27 @@ def get_academic(service, id):
     assert isinstance(service, discovery.Resource)
     assert isinstance(id, str)
 
-    ordinarios = get_range(service, id, "CAO!A3:F43")["values"]
-    # ordinarios = fix_dates_g(normalizar_primera_col_g(ordinarios))
-
-    extraordinarios = get_range(service, id, "CAEx!A3:G43")["values"]
-    # extraordinarios = fix_dates_g(normalizar_primera_col_g(extraordinarios))
+    # ordinarios = get_range(service, id, "CAO!A3:F43")["values"]
+    ordinarios, extraordinarios = academico_ordinario, academico_extraordinario
+    # remover DGs 2020 y 2019.
+    ordinarios.pop(1)
+    ordinarios.pop(1)
+    extraordinarios.pop(1)
+    extraordinarios.pop(1)
 
     print(pd.DataFrame(ordinarios))
-    planilla = merge_and_sort_dates_g(ordinarios, extraordinarios)
 
-    assert isinstance(planilla, list)
-    return planilla
+    # ordinarios = fix_dates_g(normalizar_primera_col_g(ordinarios))
+
+    # extraordinarios = get_range(service, id, "CAEx!A3:G43")["values"]
+    # extraordinarios = fix_dates_g(normalizar_primera_col_g(extraordinarios))
 
 
-# TODO: REMOVE towards modularizing
+    # planilla = merge_and_sort_dates_g(ordinarios, extraordinarios)
 
-# service = setup_service()
+    # assert isinstance(planilla, list)
+    # return planilla
 
-# pprint(get_generational(service, "1USCGq_T6GfEC2662Z6iRrSzc1AAoMHM4W13ATAvFs54"))
-# pprint(get_academic(service, "1ditHP6pQUyAx73t_76csuJUH4t4TPqlRa5CHHWRXz3o"))
+
+service = setup_service()
+get_academic(service, "1ditHP6pQUyAx73t_76csuJUH4t4TPqlRa5CHHWRXz3o")
