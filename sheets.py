@@ -99,7 +99,6 @@ def get_range(service, id, range_):
 
 def quantify_dates(dates):
     """Takes a Pandas Series of str dates in Spanish format (ex. "1/6/20") and quantifies them using approximate days. Returns a Series of integers."""
-    print(dates)
     assert isinstance(dates, pd.Series)
     for indice, date_str in enumerate(dates):
         date = [int(number) for number in date_str.split("/")]

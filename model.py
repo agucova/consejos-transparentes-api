@@ -11,12 +11,13 @@ from sqlalchemy import (
 )
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
-from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy_utils import database_exists
 
+database_url = "sqlite:///transparentes.db"
+initialize_database = not database_exists(database_url)
 
+engine = create_engine(database_url, echo=False)
 
-
-engine = create_engine("sqlite:///transparentes.db", echo=False)
 Base = declarative_base()
 metadata = Base.metadata
 
@@ -49,11 +50,14 @@ class SesionConsejo(Base):
             assert isinstance(asistio, str)
             assert isinstance(representante, Representante)
             self.representantes.append(
-                Asistencias(fecha_sesion=self.fecha, nombre_representante=representante.nombre, asistio=asistio)
+                Asistencias(
+                    fecha_sesion=self.fecha,
+                    nombre_representante=representante.nombre,
+                    asistio=asistio,
+                )
             )
 
         return self
-
 
 
 class Representante(Base):

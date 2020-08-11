@@ -24,8 +24,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-actualizar_db()
-
 @app.get("/ping")
 def saludo():
     return "pong!"

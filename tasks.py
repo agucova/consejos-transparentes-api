@@ -9,7 +9,7 @@ from sqlalchemy import (
     String,
 )
 from sqlalchemy import inspect
-from model import Session, SesionConsejo, Representante
+from model import Session, SesionConsejo, Representante, initialize_database
 from celery import Celery
 from celery.schedules import solar
 import datetime as dt
@@ -72,6 +72,7 @@ def transformar_representaciones(representaciones):
 
 @queue.task
 def actualizar_db():
+    print("Updating database using the Google Sheets API.")
     session = Session()
     service = setup_service()
     generacional = get_generational(
@@ -117,7 +118,6 @@ def actualizar_db():
         fecha for fecha in fechas_en_tabla if fecha not in fechas_existentes
     ]
     tgeneracional = transpose(generacional)
-    print(pd.DataFrame(tgeneracional))
     nombres = tgeneracional[1][1:]
     representaciones = transformar_representaciones(tgeneracional[0][1:])
 
@@ -155,3 +155,7 @@ def actualizar_db():
     session.commit()
 
     session.close()
+
+# In case the database needs to initialize
+if initialize_database:
+    actualizar_db()
