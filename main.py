@@ -4,9 +4,15 @@ from pydantic import BaseModel
 from model import Asistencias, Representante, Session
 from tasks import actualizar_db, as_dict
 from fastapi.middleware.cors import CORSMiddleware
+import uvicorn
 
 
 app = FastAPI()
+
+# Used for debugging
+if __name__ == "__main__":
+    print("Starting app in debugging mode.")
+    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True, use_colors=True)
 
 origins = [
     "https://agucova.github.io",
@@ -24,7 +30,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.get("/ping")
+
+@app.get("/")
 def saludo():
     return "pong!"
 
@@ -35,7 +42,10 @@ def limpiar_asistencias(asistencias):
 
     for asistencia in asistencias:
         asistencias_l.append(
-            {"fecha": asistencia.fecha_sesion.strftime("%d/%m/%Y"), "asistio": asistencia.asistio}
+            {
+                "fecha": asistencia.fecha_sesion.strftime("%d/%m/%Y"),
+                "asistio": asistencia.asistio,
+            }
         )
 
     return asistencias_l
