@@ -5,7 +5,8 @@ After=network.target
 
 [Service]
 Type=notify
-DynamicUser=yes
+User=agucova
+Group=agucova
 RuntimeDirectory=gunicorn
 WorkingDirectory=/home/agucova/repos/consejos-transparentes-api/
 ExecStart=/home/agucova/.poetry/bin/poetry gunicorn -k uvicorn.workers.UvicornWorker main:app
