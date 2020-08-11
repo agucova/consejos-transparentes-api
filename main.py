@@ -2,15 +2,16 @@ from typing import Optional
 from fastapi import FastAPI
 from pydantic import BaseModel
 from model import Asistencias, Representante, Session
-from init_db import cargar_db, as_dict
+from tasks import actualizar_db, as_dict
+
 
 app = FastAPI()
-cargar_db()
 
+actualizar_db()
 
-@app.get("/")
+@app.get("/ping")
 def saludo():
-    return {"saludo": "Hola, Mundo"}
+    return "pong!"
 
 
 def limpiar_asistencias(asistencias):

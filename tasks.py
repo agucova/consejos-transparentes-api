@@ -10,8 +10,24 @@ from sqlalchemy import (
 )
 from sqlalchemy import inspect
 from model import Session, SesionConsejo, Representante
+from celery import Celery
+from celery.schedules import solar
 import datetime as dt
 import pandas as pd
+
+
+queue = Celery("tasks", broker="redis://localhost:6379/0")
+queue.conf.timezone = "America/Santiago"
+
+queue.conf.beat_schedule = {
+    # Actualizar la BBDD cuando se oscurece naúticamente en Santiago
+    # Encontré notable que si quiera una opción así exista
+    # Lo corre cuando el sol está 12 grados bajo el horizonte
+    "actualizar-puesta-naútica": {
+        "task": "tasks.actualizar_db",
+        "schedule": solar("dusk_nautical", -33.459229, -70.645348),
+    },
+}
 
 ##########################
 # Inicialización de BBDD #
@@ -53,7 +69,8 @@ def transformar_representaciones(representaciones):
     return representaciones_l
 
 
-def cargar_db():
+@queue.task
+def actualizar_db():
     session = Session()
     # service = setup_service()
     # generacional = get_generational(
