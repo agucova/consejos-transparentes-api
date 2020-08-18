@@ -6,7 +6,7 @@ While the module does its best to handle possible edge cases, a million differen
 
 from json import dumps, load, loads
 from pprint import pprint
-from typing import List
+from typing import List, Union
 
 import pandas as pd
 import requests as r
@@ -34,7 +34,7 @@ def get_range(service: discovery.Resource, id: str, range_: str):
     )
 
 
-def quantify_dates(dates: pd.Series) -> List[int]:
+def quantify_dates(dates: pd.Series) -> pd.Series:
     """Takes a Pandas Series of str dates in Spanish format (ex. "1/6/20") and quantifies them using approximate days. Returns a List of integers."""
     for indice, date_str in enumerate(dates):
         date = [int(number) for number in date_str.split("/")]
@@ -56,10 +56,9 @@ def quantify_dates(dates: pd.Series) -> List[int]:
 def get_generational(service: discovery.Resource, id: str) -> List[list]:
     """ Gets the GoogleAPIClient service for GSheets and the ID of the CAi spreadsheet for the generational council.
     Receives an instance of discovery.Resource and an id str. Returns a list of lists with the sheet. """
-    assert isinstance(service, discovery.Resource)
-    assert isinstance(id, str)
 
     ordinarios = get_range(service, id, "A9:M37")["values"]
+    print(ordinarios)
     ordinarios = fix_dates_g(normalizar_primera_col_g(ordinarios))
     extraordinarios = get_range(service, id, "'Consejos Extraordinarios'!A10:Q38")[
         "values"
@@ -76,11 +75,9 @@ def normalizar_primera_col_g(planilla: List[list]) -> List[list]:
     """ Takes the first column for a generational council, repeats the merged cells and maps the roles to standarized names.
     Receives a sheet represented by a list of lists and returns a list of lists. """
 
-    assert isinstance(planilla, list)
-
     for indice, linea in enumerate(planilla):
         if linea[0]:
-            representa_a = linea[0]
+            representa_a: str = linea[0]
         else:
             planilla[indice][0] = representa_a
 
@@ -105,7 +102,7 @@ def normalizar_primera_col_g(planilla: List[list]) -> List[list]:
                 if "y ant" in rol:
                     planilla[indice + 1][0] = rol.strip(".") + "."
                 else:
-                    raise UncompatibleRole
+                    raise ValueError
 
     assert isinstance(planilla, list)
     return planilla
@@ -153,25 +150,28 @@ def fix_dates_g(planilla: List[list]) -> List[list]:
     assert isinstance(planilla, list)
     return planilla
 
-
-def sort_planilla_by_date_g(planilla_df: pd.DataFrame) -> List[list]:
+def sort_planilla_by_date_g(planilla_df: pd.DataFrame) -> list:
     """ Receives a DataFrame and returns a list of lists. """
     izq = planilla_df.iloc[:, 0:2]
-    fechas = planilla_df.iloc[:, 2:]
+    fechas: pd.DataFrame = planilla_df.iloc[:, 2:]
+    print(fechas)
+    # TODO: #1 Verificar funcionamiento y crear workaround al by: int, que claramente no está soportado.
     fechas = fechas.sort_values(
-        0, axis=1, key=lambda x: quantify_dates(x)
+        "0", axis=1, key=quantify_dates
     )  # Sortea por los días cuantificados
-    plantilla_df = pd.concat(
+    plantilla_df: pd.DataFrame = pd.concat(
         [izq, fechas], axis=1
     )  # Une los nombres con las fechas ya sorteadas
 
-    return plantilla_df.values.tolist()
+    plantila_ll: List[list] = plantilla_df.index.to_numpy().tolist()
+    return plantila_ll
 
 
-def merge_and_sort_dates_g(p1: list, p2: list) -> list:
+def merge_and_sort_dates_g(p1: list, p2: list) -> List[list]:
     """ Receives two lists and returns one list """
-    p1, p2 = pd.DataFrame(p1), pd.DataFrame(p2)
-    planilla = pd.concat([p1, p2.iloc[:, 2:]], axis=1)
+    p1_df: pd.DataFrame = pd.DataFrame(p1)
+    p2_df: pd.DataFrame = pd.DataFrame(p2)
+    planilla: pd.DataFrame = pd.concat([p1_df, p2_df.iloc[:, 2:]], axis=1)
     return sort_planilla_by_date_g(planilla)
 
 
@@ -183,15 +183,17 @@ def merge_and_sort_dates_g(p1: list, p2: list) -> list:
 def sort_planilla_by_date_a(planilla_df: pd.DataFrame) -> List[list]:
     """ Receives a DataFrame and returns a list of lists. """
     izq = planilla_df.iloc[:, 0:2]
-    fechas = planilla_df.iloc[:, 2:]
+    fechas: pd.DataFrame = planilla_df.iloc[:, 2:]
+    print(fechas)
     fechas = fechas.sort_values(
-        0, axis=1, key=lambda x: quantify_dates(x)
+        "0", axis=1, key=quantify_dates
     )  # Sortea por los días cuantificados
+    print(fechas)
     plantilla_df = pd.concat(
         [izq, fechas], axis=1
     )  # Une los nombres con las fechas ya sorteadas
 
-    return plantilla_df.values.tolist()
+    return plantilla_df.to_numpy.tolist()
 
 
 def get_academic(service: discovery.Resource, id: str) -> List[list]:
@@ -206,18 +208,16 @@ def get_academic(service: discovery.Resource, id: str) -> List[list]:
     extraordinarios.pop(1)
     extraordinarios.pop(1)
 
-    print(pd.DataFrame(ordinarios))
-
     # ordinarios = fix_dates_g(normalizar_primera_col_g(ordinarios))
 
     # extraordinarios = get_range(service, id, "CAEx!A3:G43")["values"]
     # extraordinarios = fix_dates_g(normalizar_primera_col_g(extraordinarios))
 
-    # planilla = merge_and_sort_dates_g(ordinarios, extraordinarios)
+    planilla = merge_and_sort_dates_g(ordinarios, extraordinarios)
 
     # assert isinstance(planilla, list)
-    # return planilla
+    return planilla
 
 
 service = setup_service()
-get_academic(service, "1ditHP6pQUyAx73t_76csuJUH4t4TPqlRa5CHHWRXz3o")
+# get_academic(service, "1ditHP6pQUyAx73t_76csuJUH4t4TPqlRa5CHHWRXz3o")

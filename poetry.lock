@@ -191,6 +191,17 @@ version = "0.4.3"
 
 [[package]]
 category = "main"
+description = "Type stubs for Python machine learning libraries"
+name = "data-science-types"
+optional = false
+python-versions = ">=3.6"
+version = "0.2.17"
+
+[package.extras]
+dev = ["black", "flake8", "flake8-pyi", "matplotlib", "mypy", "numpy", "pandas", "pytest"]
+
+[[package]]
+category = "main"
 description = "DNS toolkit"
 name = "dnspython"
 optional = false
@@ -1060,7 +1071,7 @@ python-versions = ">=3.6.1"
 version = "8.1"
 
 [metadata]
-content-hash = "76670ddbfb7253f842ef57ff488ac45abe46e244cac4a7e95e1f9aab0bb9b3a8"
+content-hash = "fe53821313f0c6121f94adcacccc23b920e25882747b50811c8ef1550c2030cf"
 lock-version = "1.0"
 python-versions = "^3.8"
 
@@ -1128,6 +1139,10 @@ click = [
 colorama = [
     {file = "colorama-0.4.3-py2.py3-none-any.whl", hash = "sha256:7d73d2a99753107a36ac6b455ee49046802e59d9d076ef8e47b61499fa29afff"},
     {file = "colorama-0.4.3.tar.gz", hash = "sha256:e96da0d330793e2cb9485e9ddfd918d456036c7149416295932478192f4436a1"},
+]
+data-science-types = [
+    {file = "data-science-types-0.2.17.tar.gz", hash = "sha256:e6f146e4a2eca648177caae81e55b5425e2e83b0126c92164fe498e3f4d20043"},
+    {file = "data_science_types-0.2.17-py3-none-any.whl", hash = "sha256:f1a5612cb7cabe354f626db8bd4af480cb8be32fc05a7f7d72317a391240cacb"},
 ]
 dnspython = [
     {file = "dnspython-2.0.0-py3-none-any.whl", hash = "sha256:40bb3c24b9d4ec12500f0124288a65df232a3aa749bb0c39734b782873a2544d"},
