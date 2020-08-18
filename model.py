@@ -1,15 +1,17 @@
 # coding: utf-8
+from typing import List
+
 from sqlalchemy import (
     CHAR,
+    Boolean,
     Column,
     Date,
     ForeignKey,
     Integer,
+    String,
     Table,
     create_engine,
-    String,
-    Boolean,
-    inspect
+    inspect,
 )
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
@@ -18,7 +20,9 @@ from sqlalchemy_utils import database_exists
 database_url = "sqlite:///transparentes.db"
 initialize_database = not database_exists(database_url)
 
-engine = create_engine(database_url, echo=False, connect_args={"check_same_thread": False})
+engine = create_engine(
+    database_url, echo=False, connect_args={"check_same_thread": False}
+)
 
 Base = declarative_base()
 metadata = Base.metadata
@@ -68,7 +72,7 @@ class SesionConsejo(Base):
 
         return self
 
-    def get_asistencias(self):
+    def get_asistencias(self) -> List[Asistencias]:
         session = SessionLocal.object_session(self)
         return session.query(Asistencias).filter_by(id_sesion=self.id).all()
 
@@ -85,7 +89,7 @@ class Representante(Base):
     generacional = Column(Boolean())
     academico = Column(Boolean())
 
-    def get_asistencias(self):
+    def get_asistencias(self) -> List[Asistencias]:
         session = SessionLocal.object_session(self)
         return session.query(Asistencias).filter_by(id_representante=self.id).all()
 

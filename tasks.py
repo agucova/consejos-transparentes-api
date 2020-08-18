@@ -1,21 +1,23 @@
+import datetime as dt
+from typing import List
+
+import pandas as pd
+from celery import Celery
+from celery.schedules import solar
 from sqlalchemy import (
     CHAR,
     Column,
     Date,
     ForeignKey,
     Integer,
+    String,
     Table,
     create_engine,
-    String,
+    inspect,
 )
-from sqlalchemy import inspect
-from model import SessionLocal, SesionConsejo, Representante, initialize_database
-from celery import Celery
-from celery.schedules import solar
-import datetime as dt
-import pandas as pd
-from sheets import get_generational, get_academic, setup_service
 
+from model import Representante, SesionConsejo, SessionLocal, initialize_database
+from sheets import get_academic, get_generational, setup_service
 
 queue = Celery("tasks", broker="redis://localhost:6379/0")
 queue.conf.timezone = "America/Santiago"
@@ -49,16 +51,12 @@ def convertir_fecha(fecha_str):
     return dt.date(year, month, day)
 
 
-def transpose(lista):
+def transpose(lista: List[list]) -> List[list]:
     # https://stackoverflow.com/questions/6473679/transpose-list-of-lists
     return list(map(list, zip(*lista)))
 
 
-def as_dict(obj):
-    return {c.key: getattr(obj, c.key) for c in inspect(obj).mapper.column_attrs}
-
-
-def transformar_representaciones(representaciones):
+def transformar_representaciones(representaciones: list) -> list:
     representaciones_l = []
     for representacion in representaciones:
         if representacion.isdigit():

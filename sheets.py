@@ -4,22 +4,23 @@ The only side effects of the module are in the Google Sheets API endpoint log.
 
 While the module does its best to handle possible edge cases, a million different things could go wrong with a simple change in the spreadsheet, so be advised to check for errors. """
 
-from json import loads, load, dumps
-import requests as r
+from json import dumps, load, loads
 from pprint import pprint
-from googleapiclient import discovery
-import pandas as pd
-from ejemplos import academico_ordinario, academico_extraordinario
+from typing import List
 
-def setup_service():
+import pandas as pd
+import requests as r
+from googleapiclient import discovery
+
+from ejemplos import academico_extraordinario, academico_ordinario
+
+
+def setup_service() -> discovery.Resource:
     return discovery.build("sheets", "v4")
 
 
-def get_range(service, id, range_):
-    """ Receives a service instance for GoogleAPIClient, a spreadsheet ID and a Sheets range and returns the given cells as a list of lists. """
-
-    assert isinstance(service, discovery.Resource)
-    assert isinstance(id, str) and isinstance(range_, str)
+def get_range(service: discovery.Resource, id: str, range_: str):
+    """ Receives a service instance for GoogleAPIClient, a spreadsheet ID and a Sheets range and returns the given cells. """
 
     date_time_render_option = "SERIAL_NUMBER"
 
@@ -33,9 +34,8 @@ def get_range(service, id, range_):
     )
 
 
-def quantify_dates(dates):
-    """Takes a Pandas Series of str dates in Spanish format (ex. "1/6/20") and quantifies them using approximate days. Returns a Series of integers."""
-    assert isinstance(dates, pd.Series)
+def quantify_dates(dates: pd.Series) -> List[int]:
+    """Takes a Pandas Series of str dates in Spanish format (ex. "1/6/20") and quantifies them using approximate days. Returns a List of integers."""
     for indice, date_str in enumerate(dates):
         date = [int(number) for number in date_str.split("/")]
 
@@ -53,7 +53,7 @@ def quantify_dates(dates):
 ##########################################
 
 
-def get_generational(service, id):
+def get_generational(service: discovery.Resource, id: str) -> List[list]:
     """ Gets the GoogleAPIClient service for GSheets and the ID of the CAi spreadsheet for the generational council.
     Receives an instance of discovery.Resource and an id str. Returns a list of lists with the sheet. """
     assert isinstance(service, discovery.Resource)
@@ -72,7 +72,7 @@ def get_generational(service, id):
     return planilla
 
 
-def normalizar_primera_col_g(planilla):
+def normalizar_primera_col_g(planilla: List[list]) -> List[list]:
     """ Takes the first column for a generational council, repeats the merged cells and maps the roles to standarized names.
     Receives a sheet represented by a list of lists and returns a list of lists. """
 
@@ -111,7 +111,7 @@ def normalizar_primera_col_g(planilla):
     return planilla
 
 
-def fix_dates_g(planilla):
+def fix_dates_g(planilla: List[list]) -> List[list]:
     """ Takes weird, seemingly unavoidable month names in spanish in the sheet and standarizes them as numbers.
     Receives a list of lists, returns a list of lists. """
 
@@ -154,9 +154,8 @@ def fix_dates_g(planilla):
     return planilla
 
 
-def sort_planilla_by_date_g(planilla_df):
+def sort_planilla_by_date_g(planilla_df: pd.DataFrame) -> List[list]:
     """ Receives a DataFrame and returns a list of lists. """
-    assert isinstance(planilla_df, pd.DataFrame)
     izq = planilla_df.iloc[:, 0:2]
     fechas = planilla_df.iloc[:, 2:]
     fechas = fechas.sort_values(
@@ -169,9 +168,8 @@ def sort_planilla_by_date_g(planilla_df):
     return plantilla_df.values.tolist()
 
 
-def merge_and_sort_dates_g(p1, p2):
+def merge_and_sort_dates_g(p1: list, p2: list) -> list:
     """ Receives two lists and returns one list """
-    assert isinstance(p1, list) and isinstance(p2, list)
     p1, p2 = pd.DataFrame(p1), pd.DataFrame(p2)
     planilla = pd.concat([p1, p2.iloc[:, 2:]], axis=1)
     return sort_planilla_by_date_g(planilla)
@@ -182,9 +180,8 @@ def merge_and_sort_dates_g(p1, p2):
 #######################################
 
 
-def sort_planilla_by_date_a(planilla_df):
+def sort_planilla_by_date_a(planilla_df: pd.DataFrame) -> List[list]:
     """ Receives a DataFrame and returns a list of lists. """
-    assert isinstance(planilla_df, pd.DataFrame)
     izq = planilla_df.iloc[:, 0:2]
     fechas = planilla_df.iloc[:, 2:]
     fechas = fechas.sort_values(
@@ -196,11 +193,10 @@ def sort_planilla_by_date_a(planilla_df):
 
     return plantilla_df.values.tolist()
 
-def get_academic(service, id):
+
+def get_academic(service: discovery.Resource, id: str) -> List[list]:
     """ Gets the GoogleAPIClient service for GSheets and the ID of the CAi spreadsheet for the academic council.
     Receives an instance of discovery.Resource and an id str. Returns a list of lists with the sheet. """
-    assert isinstance(service, discovery.Resource)
-    assert isinstance(id, str)
 
     # ordinarios = get_range(service, id, "CAO!A3:F43")["values"]
     ordinarios, extraordinarios = academico_ordinario, academico_extraordinario
@@ -216,7 +212,6 @@ def get_academic(service, id):
 
     # extraordinarios = get_range(service, id, "CAEx!A3:G43")["values"]
     # extraordinarios = fix_dates_g(normalizar_primera_col_g(extraordinarios))
-
 
     # planilla = merge_and_sort_dates_g(ordinarios, extraordinarios)
 

@@ -28,8 +28,8 @@ class Representante(BaseModel):
     tipo: str
     representa: str
     asistencias: List["Asistencias"]
-    generacional = bool
-    academico = bool
+    generacional: Optional[bool]
+    academico: Optional[bool]
 
     class Config:
         orm_mode = True
