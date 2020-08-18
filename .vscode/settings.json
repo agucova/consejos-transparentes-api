@@ -1,4 +1,7 @@
 {
     "python.pythonPath": ".venv/bin/python",
-    "restructuredtext.confPath": ""
+    "restructuredtext.confPath": "",
+    "python.linting.flake8Enabled": false,
+    "python.linting.enabled": false,
+    "python.linting.pylintEnabled": true
 }

@@ -8,6 +8,8 @@ from sqlalchemy import (
     Table,
     create_engine,
     String,
+    Boolean,
+    inspect
 )
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
@@ -16,7 +18,7 @@ from sqlalchemy_utils import database_exists
 database_url = "sqlite:///transparentes.db"
 initialize_database = not database_exists(database_url)
 
-engine = create_engine(database_url, echo=False)
+engine = create_engine(database_url, echo=False, connect_args={"check_same_thread": False})
 
 Base = declarative_base()
 metadata = Base.metadata
@@ -29,10 +31,10 @@ class Asistencias(Base):
     asistio = Column("asistió", CHAR(1))
 
     id_sesion = Column(Integer, ForeignKey("sesiones_consejos.id"))
-    fecha_sesion = Column(Date, ForeignKey("sesiones_consejos.fecha"))
+    # fecha_sesion = Column(Date, ForeignKey("sesiones_consejos.fecha"))
 
     id_representante = Column(Integer, ForeignKey("representantes.id"))
-    nombre_representante = Column(CHAR(200), ForeignKey("representantes.nombre"))
+    # nombre_representante = Column(CHAR(200), ForeignKey("representantes.nombre"))
 
 
 class SesionConsejo(Base):
@@ -41,7 +43,7 @@ class SesionConsejo(Base):
     nombre = Column(CHAR(50), unique=True, nullable=True)
     fecha = Column(Date, unique=True)
     representantes = relationship(
-        "Representante", secondary="asistencias", viewonly=True, primaryjoin=id==Asistencias.id_sesion, remote_side=Asistencias.id_sesion, foreign_keys=id
+        "Representante", secondary="asistencias", viewonly=True
     )
 
     def __str__(self):
@@ -50,9 +52,12 @@ class SesionConsejo(Base):
         return "Consejo @", self.fecha.strftime("%d/%m/%Y")
 
     def add_representantes(self, asistencia):
+        # tuplas tipo (<Representante>, True)
         for representante, asistio in asistencia:
             assert isinstance(asistio, str)
             assert isinstance(representante, Representante)
+            assert isinstance(representante.id, int)
+            assert isinstance(self.id, int)
             self.representantes.append(
                 Asistencias(
                     id_sesion=self.id,
@@ -63,6 +68,10 @@ class SesionConsejo(Base):
 
         return self
 
+    def get_asistencias(self):
+        session = SessionLocal.object_session(self)
+        return session.query(Asistencias).filter_by(id_sesion=self.id).all()
+
 
 class Representante(Base):
     __tablename__ = "representantes"
@@ -71,10 +80,15 @@ class Representante(Base):
     tipo = Column(CHAR(3), nullable=True)
     representa = Column(CHAR(200), nullable=True)
     sesiones = relationship(
-        "SesionConsejo", secondary="asistencias", viewonly=True, lazy="immediate", primaryjoin=id==Asistencias.id_representante, remote_side=Asistencias.id_representante, foreign_keys=id
+        "SesionConsejo", secondary="asistencias", viewonly=True, lazy="immediate"
     )
-    # entradas = association_proxy('sesiones', 'entrada')
+    generacional = Column(Boolean())
+    academico = Column(Boolean())
+
+    def get_asistencias(self):
+        session = SessionLocal.object_session(self)
+        return session.query(Asistencias).filter_by(id_representante=self.id).all()
 
 
 Base.metadata.create_all(bind=engine)
-Session = sessionmaker(bind=engine)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

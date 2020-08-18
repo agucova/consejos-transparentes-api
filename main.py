@@ -1,10 +1,12 @@
-from typing import Optional
-from fastapi import FastAPI, status
+from typing import Optional, List
+from fastapi import Depends, FastAPI, status
 from pydantic import BaseModel
-from model import Asistencias, Representante, Session
-from tasks import actualizar_db, as_dict
+from crud import get_representantes
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy.orm import Session
+
 import uvicorn
+import tasks, model, schema, crud
 
 
 app = FastAPI()
@@ -17,6 +19,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+def get_db():
+    session = model.SessionLocal()
+    try:
+        yield session
+    finally:
+        session.close()
+
+
 # Used for debugging
 if __name__ == "__main__":
     print("Starting app in debugging mode.")
@@ -28,39 +39,10 @@ def saludo():
     return "pong!"
 
 
-def limpiar_asistencias(asistencias):
-    asistencias = asistencias
-    asistencias_l = []
+@app.get("/rep/generacional/", response_model=List[schema.Representante])
+def rep_generacional(session: Session = Depends(get_db)):
+    return get_representantes(session, "generacional")
 
-    for asistencia in asistencias:
-        asistencias_l.append(
-            {
-                "fecha": asistencia.fecha_sesion.strftime("%d/%m/%Y"),
-                "asistio": asistencia.asistio,
-            }
-        )
-
-    return asistencias_l
-
-
-
-@app.get("/rep/generacional/")
-def rep_generacional():
-    session = Session()
-    representantes = [
-        as_dict(representante) for representante in session.query(Representante).all()
-    ]
-    for indice, representante in enumerate(representantes):
-        asistencias = limpiar_asistencias(
-            session.query(Asistencias)
-            .filter(Asistencias.id == representante["id"])
-            .all()
-        )
-        representantes[indice]["asistencias"] = asistencias
-
-    session.close()
-
-    return representantes
 
 @app.get("/rep/generacional/", status_code=418)
 def rep_academico():
